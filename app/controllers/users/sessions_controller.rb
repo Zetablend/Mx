@@ -1,0 +1,124 @@
+# frozen_string_literal: true
+
+class Users::SessionsController < Devise::SessionsController
+  # before_action :configure_sign_in_params, only: [:create]
+
+  # GET /resource/sign_in
+  # def new
+  #   super
+  # end
+
+  # POST /resource/sign_in
+  # def create
+  #   super
+  # end
+
+  # DELETE /resource/sign_out
+  # def destroy
+  #   super
+  # end
+
+  # protected
+
+  # If you have extra params to permit, append them to the sanitizer.
+  # def configure_sign_in_params
+  #   devise_parameter_sanitizer.permit(:sign_in, keys: [:attribute])
+  # end
+  skip_before_action :authorize_request
+
+  # POST /users/send_otp
+  # def send_otp
+  #   user = User.find_by(email: params[:email])
+  #   if user
+  #     user.generate_otp!
+  #     puts "------------------------------------------user--------------------"
+  #     puts user.inspect
+  #     # UserMailer.send_otp(user).deliver_later
+  #     render json: { success: true, message: "OTP sent to email" }
+  #   else
+  #     render json: { success: false, message: "User not found" }, status: 404
+  #   end
+  # end
+
+  # def verify_otp
+  #   user = User.find_by(email: params[:email])
+  #   if user&.otp == params[:otp] && user.otp_sent_at > 5.minutes.ago
+  #     # generate temporary token for password login
+  #     token = SecureRandom.hex(10)
+  #     user.update(otp_token: token, otp_token_sent_at: Time.current)
+  #     user.update(otp: nil, otp_sent_at: nil) # clear OTP
+  #     render json: { success: true, message: "OTP verified", otp_token: token }
+  #   else
+  #     render json: { success: false, message: "Invalid or expired OTP" }, status: 401
+  #   end
+  # end
+
+  # # POST /users/password_login
+  # def password_login
+  #   user = User.find_by(otp_token: params[:otp_token])
+  #   if user&.valid_password?(params[:password])
+  #     sign_in(user)
+  #     user.update(otp_token: nil, otp_token_sent_at: nil)
+  #     render json: { success: true, message: "Logged in", user: { email: user.email, name: user.name } }
+  #   else
+  #     render json: { success: false, message: "Invalid password or OTP token" }, status: 401
+  #   end
+  # end
+
+    # POST /users/send_otp
+  def send_otp
+    user = User.find_by(email: params[:email])
+    if user
+      otp_code = rand(100000..999999).to_s
+      user.update(otp: otp_code, otp_sent_at: Time.current)
+      
+      # Send OTP email (implement your mailer)
+      # UserMailer.with(user: user, otp: otp_code).send_otp_email.deliver_later
+
+      render json: { success: true, message: "OTP sent successfully" }
+    else
+      render json: { success: false, message: "User not found" }, status: 404
+    end
+  rescue => e
+    render json: { success: false, message: e.message }, status: 500
+  end
+
+  # POST /users/verify_otp
+  def verify_otp
+    user = User.find_by(email: params[:email])
+    if user&.otp == params[:otp] && user.otp_sent_at > 5.minutes.ago
+      # Clear OTP
+      user.update(otp: nil, otp_sent_at: nil)
+
+      # Generate a temporary OTP token for password login (optional)
+      otp_token = SecureRandom.hex(10)
+      user.update(otp_token: otp_token, otp_token_sent_at: Time.current)
+
+      render json: { success: true, message: "OTP verified", otp_token: otp_token }
+    else
+      render json: { success: false, message: "Invalid or expired OTP" }, status: 401
+    end
+  end
+
+  # POST /users/password_login
+  def password_login
+    user = User.find_by(otp_token: params[:otp_token])
+    if user&.valid_password?(params[:password])
+      # Generate JWT token like registration
+      token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first rescue nil
+
+      # Clear temporary otp_token
+      user.update(otp_token: nil, otp_token_sent_at: nil)
+
+      render json: {
+        success: true,
+        message: "Logged in successfully",
+        user: { email: user.email, name: user.name },
+        token: token
+      }
+    else
+      render json: { success: false, message: "Invalid password or OTP token" }, status: 401
+    end
+  end
+
+end
