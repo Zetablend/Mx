@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  restaurant: one
+  rating: 1
+  comment: MyText
+  visible: false
+
+two:
+  user: two
+  restaurant: two
+  rating: 1
+  comment: MyText
+  visible: false

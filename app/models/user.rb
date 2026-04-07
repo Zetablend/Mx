@@ -1,9 +1,35 @@
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable,
-         :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
+  # devise :database_authenticatable, :registerable,
+  #        :recoverable, :rememberable, :validatable,
+  #        :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
+
+    devise :database_authenticatable,
+         :registerable,
+         :validatable,
+         :jwt_authenticatable,
+         jwt_revocation_strategy: Devise::JWT::RevocationStrategies::Null
+
+  # has_many :user_details, dependent: :destroy
+  # has_many :restaurants, dependent: :destroy
+  # has_many :categories, dependent: :destroy
+  # has_many :subcategories, dependent: :destroy
+  # has_many :states, dependent: :destroy
+  # has_many :cities, dependent: :destroy
+
+  has_many :coupon_redemptions
+  has_many :coupons
+  has_many :user_referrals
+  before_create :generate_referral_code
+  belongs_to :role, optional: true
+  after_create :apply_signup_rules
+  has_many :tickets, dependent: :destroy
+
+  def password_required?
+    false
+  end
+
 
   def jwt_subject
     id
@@ -24,4 +50,31 @@ class User < ApplicationRecord
     self.otp_sent_at = nil
     save!
   end
+
+  private
+    def generate_referral_code
+      self.referral_code = "REF#{SecureRandom.hex(3).upcase}"
+    end
+  
+
+  def apply_signup_rules
+    rule = Rule.find_by(trigger_event: "User signs up")
+    return unless rule
+    # Loop through voucher rules in JSON
+    rule.voucher_rules.each do |vr|
+      Coupon.create!(
+        user_id: id,
+        rule_id: rule.id,
+        name: vr["name"],
+        description: vr["description"],
+        discount_type: vr["discount_type"],
+        value: vr["value"],
+        applicable_on: vr["applicable_on"],
+        max_usage_per_user: vr["max_usage_per_user"],
+        expiration_date: vr["expiration_date"],
+        status: "Active"
+      )
+    end
+  end
+
 end

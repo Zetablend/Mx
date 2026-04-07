@@ -12,6 +12,97 @@ Rails.application.routes.draw do
     post 'users/verify_otp', to: 'users/sessions#verify_otp'
     post 'users/password_login', to: 'users/sessions#password_login'
   end
+
+
+  namespace :api do
+    namespace :v1 do
+      resources :roles, only: [:index, :create]
+      resources :categories
+
+      # resources :restaurants
+
+
+      # resources :tickets do
+      #   resources :messages, controller: "ticket_messages", only: [:index, :create]
+      # end
+
+
+
+
+      resources :restaurants do
+        member do
+          get :generate_qr
+        end
+      end
+
+      # Product Categories Routes
+      resources :product_categories
+
+      # Products Routes
+      resources :products
+
+
+      # resources :faqs, only: [:index]
+      # resources :tickets, only: [:index, :create, :update]
+
+      resources :faqs, only: [:index, :create, :destroy]
+      # resources :tickets, only: [:index, :create]
+
+
+      
+      resources :tickets, only: [:index, :create, :update] do
+        resources :messages, controller: "ticket_messages", only: [:index, :create]
+      end
+
+
+      resources :profile, only: [:index, :update]
+
+
+      resources :categories
+      resources :subcategories
+      resources :states
+      resources :cities
+      # resources :user_details
+      resources :user_details do
+        member do
+          patch :update_status
+          patch :block
+          patch :verify
+        end
+        collection do 
+          post :import
+        end 
+      end
+      # resources :rules
+      resources :roles, only: [:index, :create, :update]
+      resources :banners
+      resources :coupons do
+        member do
+          post :redeem
+        end
+      end
+      post "qr/scan", to: "qr#scan"
+      post "coupons/create_from_event", to: "coupons#create_from_event"
+      resources :offers
+      resources :brands
+      resources :subscription_plans
+      resources :coupon_redemptions, only: [:index]
+      resources :referral_plans, only: [:index, :create, :update, :destroy]
+      resources :user_referrals, only: [:index, :update, :destroy]
+      resources :payment_options, only: [:index, :create, :update, :destroy]
+      resources :reviews do
+        member do
+          patch :toggle_visibility
+        end
+      end
+
+
+    end
+  end
+
+
+    
+    
     
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

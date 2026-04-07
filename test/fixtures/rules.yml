@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  loyalty_program_type: MyString
+  trigger_event: MyString
+  stamp_type: MyString
+  stamp_expiration: 1
+  target_audience: MyString
+  event_types: MyString
+  voucher_rules: 
+  summary: MyText
+
+two:
+  name: MyString
+  loyalty_program_type: MyString
+  trigger_event: MyString
+  stamp_type: MyString
+  stamp_expiration: 1
+  target_audience: MyString
+  event_types: MyString
+  voucher_rules: 
+  summary: MyText

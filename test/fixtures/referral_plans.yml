@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  description: MyText
+  reward_type: MyString
+  reward_value: 9.99
+  expiration_date: 2025-11-11
+  status: MyString
+
+two:
+  name: MyString
+  description: MyText
+  reward_type: MyString
+  reward_value: 9.99
+  expiration_date: 2025-11-11
+  status: MyString

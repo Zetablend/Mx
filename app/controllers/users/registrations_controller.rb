@@ -3,104 +3,161 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
-  skip_before_action :authorize_request, only: [:create]
+  # skip_before_action :authenticate_request, only: [:create]
 
-  # GET /resource/sign_up
-  # def new
-  #   super
-  # end
 
-  # POST /resource
   # def create
-  #   super
+
+  #   # First save the user
+  #   if resource.save
+  #     # Now referral can be created safely
+  #     if params[:user][:referral_code].present?
+  #       referrer = User.find_by(referral_code: params[:user][:referral_code])
+
+  #       if referrer
+  #         UserReferral.create!(
+  #           user_id: referrer.id,
+  #           referred_user_id: resource.id,  # ✅ correct ID of newly created user
+  #           referral_code: params[:user][:referral_code],
+  #           status: "Pending",
+  #           referral_plan_id: ReferralPlan.first&.id
+  #         )
+  #       end
+  #     end
+
+  #     # if params[:user][:role].present?
+  #     #   role = Role.find_by(name: params[:user][:role])
+  #     #   resource.role_id = role.id if role
+  #     # end
+
+  #     # if params[:user][:role_id].present?
+  #     #   role = Role.find_by(id: params[:user][:role_id].to_i)
+  #     #   params[:user][:role_id] = role.id if role
+  #     # end
+
+  #     token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first rescue nil
+  #     render json: {
+  #       message: "User registered successfully",
+  #       user: resource,
+  #       token: token
+  #     }, status: :created
+  #   else
+  #     render json: {
+  #       message: "Registration failed",
+  #       errors: resource.errors.full_messages
+  #     }, status: :unprocessable_entity
+  #   end
   # end
 
-  # GET /resource/edit
-  # def edit
-  #   super
+  # def create
+  #   build_resource(sign_up_params)   # <-- FIXED (creates @user)
+
+  #   if resource.save
+  #     # Referral create logic
+  #     if params[:user][:referral_code].present?
+  #       referrer = User.find_by(referral_code: params[:user][:referral_code])
+
+  #       if referrer
+  #         UserReferral.create!(
+  #           user_id: referrer.id,
+  #           referred_user_id: resource.id,
+  #           referral_code: params[:user][:referral_code],
+  #           status: "Pending",
+  #           referral_plan_id: ReferralPlan.first&.id
+  #         )
+  #       end
+  #     end
+
+  #     # Role ID assignment (user.role_id already accepted from params)
+  #     if params[:user][:role_id].present?
+  #       resource.role_id = params[:user][:role_id]
+  #       resource.save
+  #     else
+  #       resource.role_id = 2
+  #       resource.save
+
+  #     end
+
+  #     token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first rescue nil
+
+  #     render json: {
+  #       message: "User registered successfully",
+  #       user: resource,
+  #       token: token
+  #     }, status: :created
+
+  #   else
+  #     render json: {
+  #       message: "Registration failed",
+  #       errors: resource.errors.full_messages
+  #     }, status: :unprocessable_entity
+  #   end
   # end
 
-  # PUT /resource
-  # def update
-  #   super
-  # end
 
-  # DELETE /resource
-  # def destroy
-  #   super
-  # end
 
-  # GET /resource/cancel
-  # Forces the session data which is usually expired after sign
-  # in to be expired now. This is useful if the user wants to
-  # cancel oauth signing in/up in the middle of the process,
-  # removing all OAuth session data.
-  # def cancel
-  #   super
-  # end
-
+  
   # protected
 
-  # If you have extra params to permit, append them to the sanitizer.
-  # def configure_sign_up_params
-  #   devise_parameter_sanitizer.permit(:sign_up, keys: [:attribute])
-  # end
-
-  # If you have extra params to permit, append them to the sanitizer.
-  # def configure_account_update_params
-  #   devise_parameter_sanitizer.permit(:account_update, keys: [:attribute])
-  # end
-
-  # The path used after sign up.
-  # def after_sign_up_path_for(resource)
-  #   super(resource)
-  # end
-
-  # The path used after sign up for inactive accounts.
-  # def after_inactive_sign_up_path_for(resource)
-  #   super(resource)
+  # def sign_up_params
+  #   params.require(:user).permit(
+  #     :email, :password, :phone,:name,:role_id, :referral_code
+  #   ).tap do |whitelisted|
+  #     whitelisted[:name] = whitelisted.delete(:fullName) if whitelisted[:fullName]
+  #   end
   # end
 
 
 
+  skip_before_action :authenticate_request, only: [:create]
 
   def create
     build_resource(sign_up_params)
 
     if resource.save
-      token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first rescue nil
+      # Referral logic
+      if params[:user][:referral_code].present?
+        referrer = User.find_by(referral_code: params[:user][:referral_code])
+        UserReferral.create!(
+          user_id: referrer.id,
+          referred_user_id: resource.id,
+          referral_code: params[:user][:referral_code],
+          status: "Pending",
+          referral_plan_id: ReferralPlan.first&.id
+        ) if referrer
+      end
+
+      # Default role
+      resource.update(role_id: params[:user][:role_id] || 2)
+
+      token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
+
       render json: {
+        success: true,
         message: "User registered successfully",
-        user: resource,
+        user: {
+          id: resource.id,
+          email: resource.email,
+          name: resource.name,
+          role: resource.role&.name
+        },
         token: token
       }, status: :created
     else
       render json: {
-        message: "Registration failed",
+        success: false,
         errors: resource.errors.full_messages
       }, status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordNotUnique
-    render json: {
-      message: "Registration failed",
-      errors: ["Email already exists"]
-    }, status: :unprocessable_entity
   end
-
-
 
   protected
 
   def sign_up_params
     params.require(:user).permit(
-      :email, :password, :phone,:name,:role
-    ).tap do |whitelisted|
-      whitelisted[:name] = whitelisted.delete(:fullName) if whitelisted[:fullName]
-    end
+      :email, :password, :phone, :name, :role_id, :referral_code
+    )
   end
-
-
-
 
 
 end

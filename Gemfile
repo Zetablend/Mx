@@ -20,8 +20,14 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+gem 'mini_magick'
+
+gem 'jwt'
 
 
+
+gem 'rqrcode'
+gem 'chunky_png' # (optional but required for PNG QR generation)
 
 
 gem 'mysql2'
