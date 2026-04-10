@@ -11,6 +11,9 @@ Rails.application.routes.draw do
     post 'users/send_otp', to: 'users/sessions#send_otp'
     post 'users/verify_otp', to: 'users/sessions#verify_otp'
     post 'users/password_login', to: 'users/sessions#password_login'
+    post 'users/change_password', to: 'users/sessions#change_password'
+    post 'users/forgot_password', to: 'users/sessions#forgot_password'
+    post 'users/reset_password', to: 'users/sessions#reset_password'
   end
 
 

@@ -121,11 +121,13 @@ class Users::SessionsController < Devise::SessionsController
   #   end
   # end
 
-
   skip_before_action :authenticate_request, only: [
+    :create,
     :send_otp,
     :verify_otp,
-    :password_login
+    :password_login,
+    :forgot_password,
+    :reset_password
   ]
 
   # POST /users/send_otp
@@ -151,6 +153,128 @@ class Users::SessionsController < Devise::SessionsController
     else
       render json: { success: false, message: "Invalid or expired OTP" }, status: :unauthorized
     end
+  end
+
+   # POST /users/change_password
+  def change_password
+    user = current_user
+
+    unless user.valid_password?(params[:current_password])
+      return render json: {
+        success: false,
+        message: "Current password is incorrect"
+      }, status: :unprocessable_entity
+    end
+
+    if params[:new_password].blank?
+      return render json: {
+        success: false,
+        message: "New password can't be blank"
+      }, status: :unprocessable_entity
+    end
+
+    if params[:new_password] != params[:new_password_confirmation]
+      return render json: {
+        success: false,
+        message: "New password confirmation does not match"
+      }, status: :unprocessable_entity
+    end
+
+    if user.update(password: params[:new_password], password_confirmation: params[:new_password_confirmation])
+      render json: {
+        success: true,
+        message: "Password changed successfully"
+      }, status: :ok
+    else
+      render json: {
+        success: false,
+        errors: user.errors.full_messages
+      }, status: :unprocessable_entity
+    end
+  end
+
+  # POST /users/forgot_password
+  def forgot_password
+    user = User.find_by(email: params[:email])
+
+    return render json: { success: false, message: "User not found" }, status: :not_found unless user
+
+    otp = rand(100000..999999).to_s
+    user.update!(otp: otp, otp_sent_at: Time.current)
+
+    UserMailer.send_otp(user).deliver_now
+
+    render json: {
+      success: true,
+      message: "OTP sent to your email for password reset"
+    }
+  end
+
+
+  # POST /users/reset_password
+  def reset_password
+    user = User.find_by(otp_token: params[:otp_token])
+
+    unless user && user.otp_token_sent_at > 10.minutes.ago
+      return render json: {
+        success: false,
+        message: "Invalid or expired token"
+      }, status: :unauthorized
+    end
+
+    if params[:new_password].blank?
+      return render json: {
+        success: false,
+        message: "Password can't be blank"
+      }, status: :unprocessable_entity
+    end
+
+    if params[:new_password] != params[:new_password_confirmation]
+      return render json: {
+        success: false,
+        message: "Password confirmation does not match"
+      }, status: :unprocessable_entity
+    end
+
+    if user.update(password: params[:new_password], password_confirmation: params[:new_password_confirmation])
+      user.update!(otp_token: nil, otp_token_sent_at: nil)
+
+      render json: {
+        success: true,
+        message: "Password reset successfully"
+      }
+    else
+      render json: {
+        success: false,
+        errors: user.errors.full_messages
+      }, status: :unprocessable_entity
+    end
+  end
+  
+  # POST /users/sign_in
+  def create
+    user = User.find_by(email: params.dig(:user, :email))
+
+    unless user&.valid_password?(params.dig(:user, :password))
+      return render json: {
+        success: false,
+        message: "Invalid email or password"
+      }, status: :unauthorized
+    end
+
+    token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
+
+    render json: {
+      success: true,
+      message: "Login successful",
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role&.name
+      },
+      token: token
+    }, status: :ok
   end
 
   # POST /users/password_login
