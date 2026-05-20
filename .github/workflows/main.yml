@@ -1,0 +1,40 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+
+          script: |
+            cd /var/www/Mx
+
+            echo "Pull latest code"
+            git pull origin main
+
+            echo "Install gems"
+            bundle install
+
+            echo "Run migrations"
+            RAILS_ENV=production bundle exec rails db:migrate
+
+            echo "Restart service"
+            sudo systemctl restart Mxhospitality.service
+
+            echo "Check service status"
+            sudo systemctl status Mxhospitality.service --no-pager
+
+            echo "Deployment completed successfully"
