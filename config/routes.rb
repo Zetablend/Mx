@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     post 'users/change_password', to: 'users/sessions#change_password'
     post 'users/forgot_password', to: 'users/sessions#forgot_password'
     post 'users/reset_password', to: 'users/sessions#reset_password'
+    delete 'users/logout', to: 'users/sessions#logout'
   end
 
 

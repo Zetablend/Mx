@@ -127,7 +127,9 @@ class Users::SessionsController < Devise::SessionsController
     :verify_otp,
     :password_login,
     :forgot_password,
-    :reset_password
+    :reset_password,
+    :logout,
+    :change_password
   ]
 
   # POST /users/send_otp
@@ -157,7 +159,14 @@ class Users::SessionsController < Devise::SessionsController
 
    # POST /users/change_password
   def change_password
-    user = current_user
+    user = User.find_by(id: params[:user_id])
+
+    unless user
+      return render json: {
+        success: false,
+        message: "User not found"
+      }, status: :not_found
+    end
 
     unless user.valid_password?(params[:current_password])
       return render json: {
@@ -180,7 +189,10 @@ class Users::SessionsController < Devise::SessionsController
       }, status: :unprocessable_entity
     end
 
-    if user.update(password: params[:new_password], password_confirmation: params[:new_password_confirmation])
+    if user.update(
+      password: params[:new_password],
+      password_confirmation: params[:new_password_confirmation]
+    )
       render json: {
         success: true,
         message: "Password changed successfully"
@@ -301,4 +313,19 @@ class Users::SessionsController < Devise::SessionsController
     end
   end
 
+  def logout
+    user = User.find_by(id: params[:user_id])
+
+    if user.present?
+      render json: {
+        success: true,
+        message: "Logged out successfully"
+      }, status: :ok
+    else
+      render json: {
+        success: false,
+        message: "User not found"
+      }, status: :not_found
+    end
+  end
 end
