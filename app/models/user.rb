@@ -22,9 +22,15 @@ class User < ApplicationRecord
   has_many :coupons
   has_many :user_referrals
   before_create :generate_referral_code
-  belongs_to :role, optional: true
   after_create :apply_signup_rules
   has_many :tickets, dependent: :destroy
+  has_one_attached :profile_image
+
+  enum :role, {
+    user: 0,
+    merchant: 1,
+    admin: 2
+  }
 
   def password_required?
     false
