@@ -128,8 +128,6 @@ class Users::RegistrationsController < Devise::RegistrationsController
       end
 
       # Default role
-      resource.update(role_id: params[:user][:role_id] || 2)
-
       token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
 
       render json: {
@@ -139,7 +137,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
           id: resource.id,
           email: resource.email,
           name: resource.name,
-          role: resource.role&.name
+          role: resource.role
         },
         token: token
       }, status: :created
@@ -155,7 +153,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   def sign_up_params
     params.require(:user).permit(
-      :email, :password, :phone, :name, :role_id, :referral_code
+      :email, :password, :phone, :name, :role, :referral_code
     )
   end
 

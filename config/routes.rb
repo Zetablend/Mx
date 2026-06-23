@@ -17,6 +17,13 @@ Rails.application.routes.draw do
     delete 'users/logout', to: 'users/sessions#logout'
   end
 
+  namespace :api do
+    namespace :v1 do
+      get '/user/profile/:id', to: 'users#profile'
+      put "/user/profile/:id", to: "users#update_profile"
+      post "/user/profile/image/:id", to: "users#upload_profile_image"
+    end
+  end
 
   namespace :api do
     namespace :v1 do
