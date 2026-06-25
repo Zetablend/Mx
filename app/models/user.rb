@@ -25,6 +25,7 @@ class User < ApplicationRecord
   after_create :apply_signup_rules
   has_many :tickets, dependent: :destroy
   has_one_attached :profile_image
+  has_many :addresses, dependent: :destroy
 
   enum :role, {
     user: 0,
