@@ -274,6 +274,22 @@ class Users::SessionsController < Devise::SessionsController
       }, status: :unauthorized
     end
 
+    puts "User Agent: #{request.user_agent}"
+    puts "IP Address: #{request.remote_ip}"
+    puts "Location: #{request.location.inspect}"
+
+    browser = Browser.new(request.user_agent)
+
+    user.login_activities.update_all(is_current: false)
+
+    user.login_activities.create!(
+      device: "#{browser.name} / #{browser.platform.name}",
+      ip_address: request.remote_ip,
+      location: request.location&.city || "Unknown",
+      login_time: Time.current,
+      is_current: true
+    )
+
     token = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first
 
     render json: {
