@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  device: MyString
+  ip_address: MyString
+  location: MyString
+  login_time: 2026-06-27 12:59:22
+  is_current: false
+
+two:
+  user: two
+  device: MyString
+  ip_address: MyString
+  location: MyString
+  login_time: 2026-06-27 12:59:22
+  is_current: false

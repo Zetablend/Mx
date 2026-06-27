@@ -39,7 +39,8 @@ gem 'devise-jwt'
 
 
 
-
+gem "browser"
+gem 'geocoder'
 
 
 

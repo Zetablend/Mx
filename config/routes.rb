@@ -37,6 +37,19 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      namespace :user do
+        post "2fa/enable", to: "two_factor#enable"
+        post "2fa/verify", to: "two_factor#verify"
+        post "2fa/disable", to: "two_factor#disable"
+        get "login_activity/:user_id", to: "users#login_activity"
+        get "login_activity", to: "profiles#login_activity"
+        post "logout_all", to: "profiles#logout_all"
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
       resources :roles, only: [:index, :create]
       resources :categories
 
