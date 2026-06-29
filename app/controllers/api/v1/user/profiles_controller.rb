@@ -43,6 +43,31 @@ module Api
               message: "Logged out from all devices"
             }, status: :ok
           end
+
+          def download
+            user = ::User.find_by(id: params[:user_id])
+
+            return render json: { success: false, message: "User not found" }, status: :not_found unless user
+
+            data = user.attributes
+
+            export_dir = Rails.root.join("public", "exports")
+            FileUtils.mkdir_p(export_dir)
+
+            file_name = "user_data_#{user.id}.json"
+            file_path = export_dir.join(file_name)
+
+            File.write(file_path, JSON.pretty_generate(data))
+
+            download_url = "#{request.base_url}/exports/#{file_name}"
+
+            render json: {
+              success: true,
+              data: {
+                download_url: download_url
+              }
+            }
+          end
       end
     end
   end
