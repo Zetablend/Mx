@@ -44,6 +44,7 @@ Rails.application.routes.draw do
         get "login_activity/:user_id", to: "users#login_activity"
         get "login_activity", to: "profiles#login_activity"
         post "logout_all", to: "profiles#logout_all"
+        get 'data-export', to: 'profiles#download'
       end
     end
   end
