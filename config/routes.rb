@@ -51,6 +51,20 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      namespace :user do
+        resource :privacy, only: [:show, :update], controller: "privacy"
+        resource :notifications, only: [:show, :update]
+        get  "notifications/feed",          to: "notifications#feed"
+        patch "notifications/:id/read",     to: "notifications#mark_as_read"
+        patch "notifications/read-all",     to: "notifications#mark_all_as_read"
+        delete "notifications/:id",         to: "notifications#destroy"
+        get  "notifications/unread-count",  to: "notifications#unread_count"
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
       resources :roles, only: [:index, :create]
       resources :categories
 

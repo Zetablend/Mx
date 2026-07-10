@@ -27,7 +27,9 @@ class User < ApplicationRecord
   has_one_attached :profile_image
   has_many :addresses, dependent: :destroy
   has_many :login_activities, dependent: :destroy
-
+  has_one :privacy_setting, dependent: :destroy
+  has_one :notification_setting, dependent: :destroy
+  
   enum :role, {
     user: 0,
     merchant: 1,
