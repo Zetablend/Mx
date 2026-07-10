@@ -299,7 +299,7 @@ class Users::SessionsController < Devise::SessionsController
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role&.name
+        role: user.role
       },
       token: token
     }, status: :ok
