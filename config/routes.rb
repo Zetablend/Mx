@@ -59,6 +59,8 @@ Rails.application.routes.draw do
         patch "notifications/read-all",     to: "notifications#mark_all_as_read"
         delete "notifications/:id",         to: "notifications#destroy"
         get  "notifications/unread-count",  to: "notifications#unread_count"
+        get "preferences", to: "preferences#show"
+        put "preferences", to: "preferences#update"
       end
     end
   end
