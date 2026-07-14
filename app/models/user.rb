@@ -19,7 +19,7 @@ class User < ApplicationRecord
   # has_many :cities, dependent: :destroy
 
   has_many :coupon_redemptions
-  has_many :coupons
+  has_many :coupons, dependent: :destroy
   has_many :user_referrals
   before_create :generate_referral_code
   after_create :apply_signup_rules
