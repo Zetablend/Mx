@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  coupon_id: MyString
+  title: MyString
+  coupon_code: MyString
+  category: MyString
+  discount_type: MyString
+  discount_value: 9.99
+  valid_from: 2026-07-20
+  valid_till: 2026-07-20
+  status: MyString
+  usage_limit: 1
+  revenue: 9.99
+  merchant: one
+
+two:
+  coupon_id: MyString
+  title: MyString
+  coupon_code: MyString
+  category: MyString
+  discount_type: MyString
+  discount_value: 9.99
+  valid_from: 2026-07-20
+  valid_till: 2026-07-20
+  status: MyString
+  usage_limit: 1
+  revenue: 9.99
+  merchant: two

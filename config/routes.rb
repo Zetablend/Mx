@@ -54,6 +54,40 @@ mount Rswag::Api::Engine => "/api-docs"
 
   namespace :api do
     namespace :v1 do
+      namespace :merchant do
+        resources :support_tickets
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+
+        get    "coupons/stats",
+              to: "merchant_coupons#stats"
+
+        get    "coupons",
+              to: "merchant_coupons#index"
+
+        post   "coupons/create",
+              to: "merchant_coupons#create"
+
+        get    "coupons/:coupon_id",
+              to: "merchant_coupons#show"
+
+        put    "coupons/update/:coupon_id",
+              to: "merchant_coupons#update"
+
+        delete "coupons/delete/:coupon_id",
+              to: "merchant_coupons#destroy"
+
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
       namespace :user do
         post "2fa/enable", to: "two_factor#enable"
         post "2fa/verify", to: "two_factor#verify"

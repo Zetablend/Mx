@@ -29,6 +29,11 @@ class User < ApplicationRecord
   has_many :login_activities, dependent: :destroy
   has_one :privacy_setting, dependent: :destroy
   has_one :notification_setting, dependent: :destroy
+
+  has_many :support_tickets,
+         foreign_key: :merchant_id,
+         dependent: :destroy
+
   has_many :notifications, dependent: :destroy
 
   enum :role, {

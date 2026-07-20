@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  email: false
+  sms: false
+  push: false
+  marketing: false
+  coupon: false
+  offers: false
+  subscription_expiry: false
+  order_updates: false
+
+two:
+  user: two
+  email: false
+  sms: false
+  push: false
+  marketing: false
+  coupon: false
+  offers: false
+  subscription_expiry: false
+  order_updates: false
