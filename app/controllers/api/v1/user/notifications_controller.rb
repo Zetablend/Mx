@@ -67,10 +67,18 @@ module Api
 
         # PATCH /api/v1/user/notifications/:id/read
         def mark_as_read
+          @notification = @user.notifications.find_by(id: params[:id])
+
+          return render json: {
+            success: false,
+            message: "Notification not found"
+          }, status: :not_found unless @notification
+
           @notification.update(is_read: true)
 
           render json: {
-            success: true
+            success: true,
+            message: "Notification marked as read"
           }, status: :ok
         end
 
@@ -86,10 +94,18 @@ module Api
 
         # DELETE /api/v1/user/notifications/:id
         def destroy
+          @notification = @user.notifications.find_by(id: params[:id])
+
+          return render json: {
+            success: false,
+            message: "Notification not found"
+          }, status: :not_found unless @notification
+
           @notification.destroy
 
           render json: {
-            success: true
+            success: true,
+            message: "Notification deleted successfully"
           }, status: :ok
         end
 

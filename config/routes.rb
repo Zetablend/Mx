@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+
+mount Rswag::Api::Engine => "/api-docs"
+ mount Rswag::Ui::Engine  => "/api-docs"
+
   get "otp_sessions/new"
   get "otp_sessions/verify"
   devise_for :users,
@@ -33,6 +37,19 @@ Rails.application.routes.draw do
         end
       end
     end
+  end
+
+  namespace :api do 
+    namespace :v1 do 
+      namespace :merchant do 
+        get "dashboard/stats", to: "dashboard#stats" 
+        get "dashboard/coupon_usage", to: "dashboard#coupon_usage"
+        get "dashboard/revenue_analytics", to: "dashboard#revenue_analytics"
+        get "dashboard/top_coupons", to: "dashboard#top_coupons"
+        get "redemptions/latest", to: "redemptions#latest"
+        get "reviews", to: "reviews#index"
+      end 
+    end 
   end
 
   namespace :api do
@@ -93,6 +110,8 @@ Rails.application.routes.draw do
         patch "notifications/read-all",     to: "notifications#mark_all_as_read"
         delete "notifications/:id",         to: "notifications#destroy"
         get  "notifications/unread-count",  to: "notifications#unread_count"
+        get "preferences", to: "preferences#show"
+        put "preferences", to: "preferences#update"
       end
     end
   end
@@ -205,6 +224,7 @@ Rails.application.routes.draw do
   # root "posts#index"
 end
 # Rails.application.routes.draw do
+#  mount Rswag::Api::Engine => '/api-docs'
 #   # OTP session routes (if you still want them)
 #   get "otp_sessions/new"
 #   get "otp_sessions/verify"

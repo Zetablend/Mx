@@ -19,7 +19,7 @@ class User < ApplicationRecord
   # has_many :cities, dependent: :destroy
 
   has_many :coupon_redemptions
-  has_many :coupons
+  has_many :coupons, dependent: :destroy
   has_many :user_referrals
   before_create :generate_referral_code
   after_create :apply_signup_rules
@@ -29,10 +29,13 @@ class User < ApplicationRecord
   has_many :login_activities, dependent: :destroy
   has_one :privacy_setting, dependent: :destroy
   has_one :notification_setting, dependent: :destroy
+
   has_many :support_tickets,
          foreign_key: :merchant_id,
          dependent: :destroy
-  
+
+  has_many :notifications, dependent: :destroy
+
   enum :role, {
     user: 0,
     merchant: 1,
