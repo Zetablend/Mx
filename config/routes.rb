@@ -63,6 +63,15 @@ mount Rswag::Api::Engine => "/api-docs"
   namespace :api do
     namespace :v1 do
       namespace :merchant do
+        
+        get "coupons/analytics",
+            to: "merchant_coupons#analytics"
+
+        get "coupons/filter",
+            to: "merchant_coupons#filter"
+
+        get "coupons/expiry-alerts",
+            to: "merchant_coupons#expiry_alerts"
 
         get    "coupons/stats",
               to: "merchant_coupons#stats"
