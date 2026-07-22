@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+
+mount Rswag::Api::Engine => "/api-docs"
+ mount Rswag::Ui::Engine  => "/api-docs"
+
   get "otp_sessions/new"
   get "otp_sessions/verify"
   devise_for :users,
@@ -31,6 +35,62 @@ Rails.application.routes.draw do
         member do
           patch :default
         end
+      end
+    end
+  end
+
+  namespace :api do 
+    namespace :v1 do 
+      namespace :merchant do 
+        get "dashboard/stats", to: "dashboard#stats" 
+        get "dashboard/coupon_usage", to: "dashboard#coupon_usage"
+        get "dashboard/revenue_analytics", to: "dashboard#revenue_analytics"
+        get "dashboard/top_coupons", to: "dashboard#top_coupons"
+        get "redemptions/latest", to: "redemptions#latest"
+        get "reviews", to: "reviews#index"
+      end 
+    end 
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+        resources :support_tickets
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+        
+        get "coupons/analytics",
+            to: "merchant_coupons#analytics"
+
+        get "coupons/filter",
+            to: "merchant_coupons#filter"
+
+        get "coupons/expiry-alerts",
+            to: "merchant_coupons#expiry_alerts"
+
+        get    "coupons/stats",
+              to: "merchant_coupons#stats"
+
+        get    "coupons",
+              to: "merchant_coupons#index"
+
+        post   "coupons/create",
+              to: "merchant_coupons#create"
+
+        get    "coupons/:coupon_id",
+              to: "merchant_coupons#show"
+
+        put    "coupons/update/:coupon_id",
+              to: "merchant_coupons#update"
+
+        delete "coupons/delete/:coupon_id",
+              to: "merchant_coupons#destroy"
+
       end
     end
   end
@@ -173,6 +233,7 @@ Rails.application.routes.draw do
   # root "posts#index"
 end
 # Rails.application.routes.draw do
+#  mount Rswag::Api::Engine => '/api-docs'
 #   # OTP session routes (if you still want them)
 #   get "otp_sessions/new"
 #   get "otp_sessions/verify"
