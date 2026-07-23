@@ -309,7 +309,7 @@ Devise.setup do |config|
 
   Devise.setup do |config|
   config.jwt do |jwt|
-    jwt.secret = Rails.application.credentials.secret_key_base
+    jwt.secret = Rails.application.secret_key_base
     jwt.dispatch_requests = [
       ['POST', %r{^/users/sign_in$}],
       ['POST', %r{^/users/password_login$}]

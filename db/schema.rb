@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_20_072400) do
   create_table "active_storage_attachments", charset: "utf8mb3", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -37,6 +37,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "addresses", charset: "utf8mb3", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "full_name"
+    t.string "phone"
+    t.string "address1"
+    t.string "address2"
+    t.string "city"
+    t.string "state"
+    t.string "pincode"
+    t.string "country"
+    t.string "address_type"
+    t.boolean "is_default"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_addresses_on_user_id"
   end
 
   create_table "banners", charset: "utf8mb3", force: :cascade do |t|
@@ -112,6 +129,65 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
     t.index ["jti"], name: "index_jwt_denylists_on_jti"
   end
 
+  create_table "login_activities", charset: "utf8mb3", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "device"
+    t.string "ip_address"
+    t.string "location"
+    t.datetime "login_time"
+    t.boolean "is_current", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_login_activities_on_user_id"
+  end
+
+  create_table "merchant_coupons", charset: "utf8mb3", force: :cascade do |t|
+    t.string "coupon_id"
+    t.string "title"
+    t.string "coupon_code"
+    t.string "category"
+    t.string "discount_type"
+    t.decimal "discount_value", precision: 10
+    t.date "valid_from"
+    t.date "valid_till"
+    t.string "status"
+    t.integer "usage_limit"
+    t.decimal "revenue", precision: 10
+    t.bigint "merchant_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "notification_settings", charset: "utf8mb3", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.boolean "email", default: true, null: false
+    t.boolean "sms", default: false, null: false
+    t.boolean "push", default: true, null: false
+    t.boolean "marketing", default: false, null: false
+    t.boolean "coupon", default: true, null: false
+    t.boolean "offers", default: true, null: false
+    t.boolean "subscription_expiry", default: true, null: false
+    t.boolean "order_updates", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notification_settings_on_user_id", unique: true
+  end
+
+  create_table "notifications", charset: "utf8mb3", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title"
+    t.text "message"
+    t.string "notification_type"
+    t.boolean "is_read"
+    t.string "action_url"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_read"], name: "index_notifications_on_is_read"
+    t.index ["notification_type"], name: "index_notifications_on_notification_type"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "offers", charset: "utf8mb3", force: :cascade do |t|
     t.string "title"
     t.text "description"
@@ -133,6 +209,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "privacy_settings", charset: "utf8mb3", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.boolean "share_data_with_partners"
+    t.boolean "personalized_ads"
+    t.boolean "analytics_tracking"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_privacy_settings_on_user_id"
   end
 
   create_table "product_categories", charset: "utf8mb3", force: :cascade do |t|
@@ -232,6 +318,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "support_tickets", charset: "utf8mb3", force: :cascade do |t|
+    t.bigint "merchant_id", null: false
+    t.string "subject"
+    t.string "status", default: "Open"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["merchant_id"], name: "index_support_tickets_on_merchant_id"
+  end
+
   create_table "ticket_messages", charset: "utf8mb3", force: :cascade do |t|
     t.bigint "ticket_id", null: false
     t.bigint "user_id", null: false
@@ -271,7 +366,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "phone"
-    t.integer "role"
+    t.integer "role", default: 0
     t.string "name"
     t.string "otp"
     t.datetime "otp_sent_at"
@@ -282,6 +377,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
     t.boolean "verified"
     t.boolean "blocked"
     t.integer "role_id"
+    t.string "username"
+    t.date "dob"
+    t.string "gender"
+    t.string "profile_image"
+    t.string "language"
+    t.string "currency"
+    t.string "location"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["referral_code"], name: "index_users_on_referral_code", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -289,12 +391,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_040248) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "addresses", "users"
   add_foreign_key "cities", "states"
+  add_foreign_key "login_activities", "users"
+  add_foreign_key "notification_settings", "users"
+  add_foreign_key "notifications", "users"
+  add_foreign_key "privacy_settings", "users"
   add_foreign_key "products", "product_categories"
   add_foreign_key "restaurants", "categories"
   add_foreign_key "reviews", "restaurants"
   add_foreign_key "reviews", "users"
   add_foreign_key "subcategories", "categories"
+  add_foreign_key "support_tickets", "users", column: "merchant_id"
   add_foreign_key "ticket_messages", "tickets"
   add_foreign_key "ticket_messages", "users"
   add_foreign_key "tickets", "users"
