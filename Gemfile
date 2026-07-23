@@ -74,4 +74,5 @@ group :development, :test do
   gem 'rswag-api'
   gem 'rswag-ui'
   gem 'rswag-specs'
+  gem 'groupdate'
 end

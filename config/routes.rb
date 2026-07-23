@@ -31,6 +31,46 @@ mount Rswag::Api::Engine => "/api-docs"
 
   namespace :api do
     namespace :v1 do
+      namespace :merchant do
+
+        get    'offers/stats',      to: 'offers#stats'
+        get    'offers',            to: 'offers#index'
+        get    'offers/list',       to: 'offers#list'
+        get    'offers/analytics',  to: 'offers#analytics'
+        get    'offers/banners',    to: 'offers#banners'
+
+        post   'offers/create',              to: 'offers#create'
+        put    'offers/update/:id',          to: 'offers#update'
+        delete 'offers/delete/:id',          to: 'offers#destroy'
+        get    'offers/:id',                 to: 'offers#show'
+
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+
+        resources :deals,
+                  param: :deal_code do
+
+          collection do
+            get :stats
+            get :analytics
+            get :dashboard
+            get :filter
+            get :list
+          end
+
+        end
+
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
       resources :addresses do
         member do
           patch :default
