@@ -70,6 +70,7 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   gem 'rswag-specs'
+  gem 'groupdate'
 end
 
 gem 'rspec-rails'
