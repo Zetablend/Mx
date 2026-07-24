@@ -47,7 +47,7 @@ default: &default
   host: 127.0.0.1
   socket: /tmp/mysqld.sock
   username: root
-  password: root
+  password: Root@123
 
 development:
   <<: *default
@@ -56,29 +56,21 @@ development:
 test:
   <<: *default
   database: CoupenApp_test
-  username: root
-  password: root
 
 production:
   <<: *default
   database: CoupenApp_production
-  username: root
-  password: CoupenApp@123
+  username: mx_user
+  password: StrongPass123!
 
 cable:
   <<: *default
   database: CoupenApp_production
-  username: root
-  password: CoupenApp@123
 
 queue:
   <<: *default
   database: CoupenApp_production
-  username: root
-  password: CoupenApp@123
 
 cache:
   <<: *default
   database: CoupenApp_production
-  username: root
-  password: CoupenApp@123
