@@ -57,6 +57,33 @@ end
     namespace :v1 do
       namespace :merchant do
 
+        resources :merchant_restaurants,
+                  param: :restaurant_id,
+                  only: [:index, :show, :create, :update, :destroy] do
+
+          collection do
+            get :stats
+            get :filter
+            get :analytics
+            get :dashboard
+            get :list
+          end
+
+          member do
+            get :gallery
+            patch :settings
+          end
+
+        end
+
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+
         resources :deals,
                   param: :deal_code do
 
