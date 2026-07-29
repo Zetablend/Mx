@@ -127,6 +127,73 @@ end
   namespace :api do
     namespace :v1 do
       namespace :merchant do
+
+        get  "locations/stats", to: "merchant_locations#stats"
+        get  "locations/filter", to: "merchant_locations#filter"
+        get  "locations/list", to: "merchant_locations#list"
+
+        post "locations/create", to: "merchant_locations#create"
+
+        put  "locations/update/:location_id", to: "merchant_locations#update"
+
+        
+        get  "locations/staff/:location_id", to: "merchant_locations#staff"
+        
+        get  "locations/analytics", to: "merchant_locations#analytics"
+        
+        get  "locations/dashboard", to: "merchant_locations#dashboard"
+        get  "locations/:location_id", to: "merchant_locations#show"
+
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+
+        get "redemptions/stats", to: "merchant_redemptions#stats"
+        get "redemptions/filter", to: "merchant_redemptions#filter"
+        get "redemptions/list", to: "merchant_redemptions#index"
+        get "redemptions/recent", to: "merchant_redemptions#recent"
+        get "redemptions/pending", to: "merchant_redemptions#pending"
+        get "redemptions/analytics", to: "merchant_redemptions#analytics"
+
+        get "redemptions/:redemption_id",
+            to: "merchant_redemptions#show"
+
+        patch "redemptions/verify/:redemption_id",
+              to: "merchant_redemptions#verify"
+
+        patch "redemptions/reject/:redemption_id",
+              to: "merchant_redemptions#reject"
+
+      end
+    end
+  end
+  
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+        resources :customers, only: [:show], param: :customer_id do
+          collection do
+            get :stats
+            get :filter
+            get :list
+            get :analytics
+          end
+
+          member do
+            get :activity
+          end
+        end
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
         resources :support_tickets
       end
     end
