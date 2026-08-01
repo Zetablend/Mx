@@ -202,6 +202,47 @@ end
   namespace :api do
     namespace :v1 do
       namespace :merchant do
+        post "reviews/create", to: "merchant_reviews#create"
+        get "reviews/stats", to: "merchant_reviews#stats"
+        get "reviews/list", to: "merchant_reviews#list"
+        get "reviews/analytics", to: "merchant_reviews#analytics"
+
+        post "reviews/reply/:review_id", to: "merchant_reviews#reply"
+        post "reviews/report/:review_id", to: "merchant_reviews#report"
+
+        get "reviews/:review_id", to: "merchant_reviews#show"
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+        namespace :notifications do
+
+        end
+
+        resources :notifications, only: [] do
+          collection do
+            get :stats
+            get :filter
+            get :list
+
+            post :send_notification
+            post :schedule
+          end
+
+          member do
+            get :show
+          end
+        end
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
         
         get "coupons/analytics",
             to: "merchant_coupons#analytics"
