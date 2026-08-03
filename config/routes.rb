@@ -349,6 +349,21 @@ end
       resources :profile, only: [:index, :update]
 
 
+      namespace :merchant do
+        get  "profile/gallery",              to: "profile#gallery"
+        post "profile/gallery/upload",       to: "profile#upload_gallery"
+        get  "profile/social-links",         to: "profile#social_links"
+        put  "profile/social-links",         to: "profile#update_social_links"
+        namespace :profile do
+          get :header
+          get :information
+          put :profile_image
+          put :banner
+          put :information, action: :update_information
+        end
+      end
+
+
       resources :categories
       resources :subcategories
       resources :states
