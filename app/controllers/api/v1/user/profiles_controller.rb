@@ -28,6 +28,28 @@ module Api
             }
           end
 
+          def login_history
+            user = ::User.find_by(id: params[:user_id])
+
+            return render json: {
+              success: false,
+              message: "User not found"
+            }, status: :not_found unless user
+
+            activities = user.login_activities.order(login_time: :desc)
+
+            render json: {
+              success: true,
+              data: activities.map do |activity|
+                {
+                  device: activity.device,
+                  location: activity.location,
+                  date: activity.login_time.strftime("%d %b %Y")
+                }
+              end
+            }, status: :ok
+          end
+
           def logout_all
             user = ::User.find_by(id: params[:user_id])
 

@@ -283,6 +283,7 @@ end
         post "2fa/disable", to: "two_factor#disable"
         get "login_activity/:user_id", to: "users#login_activity"
         get "login_activity", to: "profiles#login_activity"
+        get "login_history", to: "profiles#login_history"
         post "logout_all", to: "profiles#logout_all"
         get 'data-export', to: 'profiles#download'
       end
