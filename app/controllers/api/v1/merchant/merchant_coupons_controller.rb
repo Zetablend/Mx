@@ -2,6 +2,7 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
   skip_before_action :authenticate_request
   before_action :set_coupon,
                 only: [:show, :update, :destroy]
+  before_action :validate_merchant
 
   rescue_from StandardError,
               with: :handle_internal_error
@@ -12,16 +13,15 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
   ###################################
 
   def stats
+    coupons = MerchantCoupon.where(merchant_id: params[:merchant_id])
+
     render json: {
       success: true,
       data: {
-        total_coupons: MerchantCoupon.count,
-        active_coupons:
-          MerchantCoupon.active.count,
-        expiring_soon:
-          MerchantCoupon.expiring_soon.count,
-        revenue:
-          MerchantCoupon.sum(:revenue)
+        total_coupons: coupons.count,
+        active_coupons: coupons.active.count,
+        expiring_soon: coupons.expiring_soon.count,
+        revenue: coupons.sum(:revenue)
       }
     }
   rescue
@@ -37,7 +37,7 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
   ###################################
 
   def index
-    coupons = MerchantCoupon.all
+    coupons = MerchantCoupon.where(merchant_id: params[:merchant_id])
 
     if coupons.present?
       render json: {
@@ -45,6 +45,7 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
         data: coupons.map do |coupon|
           {
             id: coupon.id,
+            coupon_id: coupon.coupon_id,
             title: coupon.title,
             code: coupon.coupon_code,
             category: coupon.category,
@@ -178,7 +179,7 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
   # Coupon Analytics
   ###################################
   def analytics
-    coupons = MerchantCoupon.all
+    coupons = MerchantCoupon.where(merchant_id: params[:merchant_id])
 
     if coupons.present?
       redemptions =
@@ -219,7 +220,7 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
   # Coupon Filters
   ###################################
   def filter
-    coupons = MerchantCoupon.all
+    coupons = MerchantCoupon.where(merchant_id: params[:merchant_id])
 
     coupons =
       coupons.where(category: params[:category]) if params[:category].present?
@@ -262,7 +263,9 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
   def expiry_alerts
     alerts = []
 
-    MerchantCoupon.where.not(valid_till: nil).find_each do |coupon|
+    MerchantCoupon.where(merchant_id: params[:merchant_id])
+            .where.not(valid_till: nil)
+            .find_each do |coupon|
       days_left =
         (coupon.valid_till.to_date - Date.current).to_i
 
@@ -302,13 +305,11 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
   private
 
   def set_coupon
-    @coupon =
-      MerchantCoupon.find_by(
-        coupon_id:
-        params[:coupon_id]
-      )
+    @coupon = MerchantCoupon.find_by(
+      coupon_id: params[:coupon_id],
+      merchant_id: params[:merchant_id]
+    )
   end
-
 
   def coupon_params
     params.permit(
@@ -409,5 +410,14 @@ class Api::V1::Merchant::MerchantCouponsController < ApplicationController
       error:
         exception.message
     }, status: :internal_server_error
+  end
+
+  def validate_merchant
+    return if params[:merchant_id].present?
+
+    render json: {
+      success: false,
+      message: "merchant_id is required"
+    }, status: :unprocessable_entity
   end
 end
