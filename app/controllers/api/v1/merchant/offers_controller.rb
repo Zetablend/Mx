@@ -1,58 +1,45 @@
 # app/controllers/api/v1/merchant/offers_controller.rb
-
 class Api::V1::Merchant::OffersController < ApplicationController
   skip_before_action :authenticate_request
+
+  before_action :set_merchant
   before_action :set_offer, only: [:show, :update, :destroy]
 
   def stats
+    offers = MerchantOffer.where(merchant_id: @merchant.id)
+
     render json: {
       success: true,
       data: {
-        totalCampaigns: MerchantOffer.count,
-        activeBanners: MerchantOffer.where(status: "Active").count,
-        flashDeals: MerchantOffer.where(priority: "High").count,
-        homepageFeatured: MerchantOffer.where(category: "Featured").count
+        totalCampaigns: offers.count,
+        activeBanners: offers.where(status: "Active").count,
+        flashDeals: offers.where(priority: "High").count,
+        homepageFeatured: offers.where(category: "Featured").count
       }
     }
   end
 
   def index
-    offers = MerchantOffer.all
-
-    offers = offers.where(
-      "title LIKE ?", "%#{params[:search]}%"
-    ) if params[:search].present?
-
-    offers = offers.where(status: params[:status]) if params[:status].present?
-    offers = offers.where(category: params[:category]) if params[:category].present?
-
-    page = (params[:page] || 1).to_i
-    limit = (params[:limit] || 10).to_i
-
-    total = offers.count
-
-    offers = offers.offset((page - 1) * limit).limit(limit)
+    offers = MerchantOffer.where(merchant_id: @merchant.id)
 
     render json: {
       success: true,
-      data: offers,
-      pagination: {
-        page: page,
-        limit: limit,
-        total: total
-      }
+      data: offers
     }
   end
 
   def list
+    offers = MerchantOffer.where(merchant_id: @merchant.id)
+
     render json: {
       success: true,
-      data: MerchantOffer.all
+      data: offers
     }
   end
 
   def create
     offer = MerchantOffer.new(offer_params)
+    offer.merchant_id = @merchant.id
 
     if offer.save
       render json: {
@@ -72,7 +59,8 @@ class Api::V1::Merchant::OffersController < ApplicationController
     if @offer.update(offer_params)
       render json: {
         success: true,
-        message: "Offer updated successfully"
+        message: "Offer updated successfully",
+        data: @offer
       }
     else
       render json: {
@@ -100,9 +88,12 @@ class Api::V1::Merchant::OffersController < ApplicationController
 
   def analytics
     data = MerchantOffer
-            .where(created_at: 6.months.ago.beginning_of_month..Time.current)
-            .group("DATE_FORMAT(created_at,'%b')")
-            .count
+      .where(
+        merchant_id: @merchant.id,
+        created_at: 6.months.ago.beginning_of_month..Time.current
+      )
+      .group("DATE_FORMAT(created_at,'%b')")
+      .count
 
     result = data.map do |month, count|
       {
@@ -118,7 +109,9 @@ class Api::V1::Merchant::OffersController < ApplicationController
   end
 
   def banners
-    banners = MerchantOffer.where.not(banner_image: nil)
+    banners = MerchantOffer
+      .where(merchant_id: @merchant.id)
+      .where.not(banner_image: nil)
 
     render json: {
       success: true,
@@ -128,8 +121,22 @@ class Api::V1::Merchant::OffersController < ApplicationController
 
   private
 
+  def set_merchant
+    @merchant = User.find_by(id: params[:merchant_id])
+
+    unless @merchant
+      render json: {
+        success: false,
+        message: "Merchant not found"
+      }, status: :not_found
+    end
+  end
+
   def set_offer
-    @offer = MerchantOffer.find_by(id: params[:id])
+    @offer = MerchantOffer.find_by(
+      id: params[:id],
+      merchant_id: @merchant.id
+    )
 
     unless @offer
       render json: {
@@ -147,7 +154,7 @@ class Api::V1::Merchant::OffersController < ApplicationController
       :priority,
       :status,
       :banner_image,
-      :merchant_id
+      :clicks
     )
   end
 end
