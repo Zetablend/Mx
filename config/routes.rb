@@ -286,6 +286,41 @@ end
         get "login_history", to: "profiles#login_history"
         post "logout_all", to: "profiles#logout_all"
         get 'data-export', to: 'profiles#download'
+        get "referrals", to: "referrals#index"
+        post "referrals/invite", to: "referrals#invite"
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      post "wishlist/toggle", to: "wishlists#toggle"
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      resources :faq_categories, only: [:create]
+
+      resources :faqs, only: [:index, :create] do
+        collection do
+          get :categories
+          get :popular
+        end
+
+        member do
+          post :feedback
+        end
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      resources :locations, only: [:index, :show] do
+        collection do
+          get :states
+        end
       end
     end
   end
@@ -302,6 +337,29 @@ end
         get  "notifications/unread-count",  to: "notifications#unread_count"
         get "preferences", to: "preferences#show"
         put "preferences", to: "preferences#update"
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+
+      namespace :merchant do
+        get "settings/business-information",
+            to: "settings#business_information"
+
+        put "settings/business-information",
+            to: "settings#update_business_information"
+      end
+
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
+        post "staff/create", to: "staff#create"
+        get "staff/list", to: "staff#list"
       end
     end
   end
