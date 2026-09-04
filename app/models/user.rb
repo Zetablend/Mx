@@ -29,15 +29,22 @@ class User < ApplicationRecord
   has_many :login_activities, dependent: :destroy
   has_one :privacy_setting, dependent: :destroy
   has_one :notification_setting, dependent: :destroy
+  has_many :locations, dependent: :destroy
+  has_many :wishlists, dependent: :destroy
   has_one_attached :profile_image
   has_one_attached :banner_image
   has_many_attached :gallery_images
+  has_many :referrals,
+         foreign_key: :referrer_id,
+         dependent: :destroy
 
   has_many :support_tickets,
          foreign_key: :merchant_id,
          dependent: :destroy
 
   has_many :notifications, dependent: :destroy
+  has_one :merchant_business_information,
+        dependent: :destroy
 
   enum :role, {
     user: 0,
