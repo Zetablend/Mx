@@ -14,6 +14,54 @@ class Api::V1::Merchant::ProfileController < ApplicationController
     }
   end
 
+  def show
+    user = User.find_by(id: params[:user_id])
+
+    unless user
+      return render json: {
+        success: false,
+        message: "User not found"
+      }, status: :not_found
+    end
+
+    unless user.role == "merchant"
+      return render json: {
+        success: false,
+        message: "User is not a merchant"
+      }, status: :forbidden
+    end
+
+    business_info = MerchantBusinessInformation.find_by(user_id: user.id)
+
+    render json: {
+      success: true,
+      data: {
+        business_information: {
+          business_name: business_info&.business_name,
+          brand_email: business_info&.brand_email,
+          gst_vat_number: business_info&.gst_vat_number,
+          pan_tax_number: business_info&.pan_tax_number,
+          bank_account: business_info&.bank_account,
+          phone_number: business_info&.phone_number
+        },
+
+        social_links: {
+          instagram: user.instagram,
+          facebook: user.facebook,
+          linkedin: user.linkedin,
+          youtube: user.youtube
+        },
+
+        gallery_images: user.gallery_images.map.with_index(1) do |image, index|
+          {
+            image_id: "IMG#{1000 + index}",
+            imageUrl: url_for(image)
+          }
+        end
+      }
+    }, status: :ok
+  end
+
   def profile_image
     if params[:profileImage].present?
       @user.profile_image.purge if @user.profile_image.attached?
