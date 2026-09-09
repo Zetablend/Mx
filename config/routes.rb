@@ -358,8 +358,22 @@ end
   namespace :api do
     namespace :v1 do
       namespace :merchant do
+
+        namespace :settings do
+          get "notifications", to: "notifications#show"
+          put "notifications", to: "notifications#update"
+        end
+
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :merchant do
         post "staff/create", to: "staff#create"
         get "staff/list", to: "staff#list"
+        get "profile", to: "profile#show"
       end
     end
   end
