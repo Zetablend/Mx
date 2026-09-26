@@ -8,6 +8,8 @@ class MerchantRestaurant < ApplicationRecord
     active: 0,
     inactive: 1
   }
+  
+  has_many_attached :gallery_images
 
   before_create :generate_restaurant_id
 

@@ -196,8 +196,9 @@ class Api::V1::Merchant::MerchantRestaurantsController < ApplicationController
 
   # GET /api/v1/merchant/merchant_restaurants/:restaurant_id/gallery
   def gallery
-
-    restaurant = MerchantRestaurant.find_by(restaurant_id: params[:restaurant_id])
+    restaurant = MerchantRestaurant.find_by(
+      restaurant_id: params[:restaurant_id]
+    )
 
     if restaurant.nil?
       render json: {
@@ -207,13 +208,143 @@ class Api::V1::Merchant::MerchantRestaurantsController < ApplicationController
       return
     end
 
+    images = restaurant.gallery_images.map do |image|
+      {
+        id: image.id,
+        image_id: image.id,
+        url: url_for(image),
+        type: "gallery"
+      }
+    end
+
     render json: {
       success: true,
-      restaurant_id: restaurant.restaurant_id,
-      images: []
+      data: images
     }
   end
 
+  # POST /api/v1/merchant/merchant_restaurants/:restaurant_id/gallery
+  def create_gallery_image
+    restaurant = MerchantRestaurant.find_by(
+      restaurant_id: params[:restaurant_id]
+    )
+
+    if restaurant.nil?
+      render json: {
+        success: false,
+        message: "Restaurant not found."
+      }, status: :not_found
+      return
+    end
+
+    unless params[:image].present?
+      render json: {
+        success: false,
+        message: "Image is required."
+      }, status: :unprocessable_entity
+      return
+    end
+
+    restaurant.gallery_images.attach(params[:image])
+
+    image = restaurant.gallery_images.last
+
+    render json: {
+      success: true,
+      message: "Gallery image uploaded successfully.",
+      data: {
+        id: image.id,
+        image_id: image.id,
+        url: url_for(image),
+        type: "gallery"
+      }
+    }, status: :created
+  end
+
+  # PATCH /api/v1/merchant/merchant_restaurants/:restaurant_id/gallery/:image_id
+  def update_gallery_image
+    restaurant = MerchantRestaurant.find_by(
+      restaurant_id: params[:restaurant_id]
+    )
+
+    if restaurant.nil?
+      render json: {
+        success: false,
+        message: "Restaurant not found."
+      }, status: :not_found
+      return
+    end
+
+    image = restaurant.gallery_images.find_by(
+      id: params[:image_id]
+    )
+
+    if image.nil?
+      render json: {
+        success: false,
+        message: "Gallery image not found."
+      }, status: :not_found
+      return
+    end
+
+    unless params[:image].present?
+      render json: {
+        success: false,
+        message: "Image is required."
+      }, status: :unprocessable_entity
+      return
+    end
+
+    image.purge
+    restaurant.gallery_images.attach(params[:image])
+
+    new_image = restaurant.gallery_images.last
+
+    render json: {
+      success: true,
+      message: "Gallery image updated successfully.",
+      data: {
+        id: new_image.id,
+        image_id: new_image.id,
+        url: url_for(new_image),
+        type: "gallery"
+      }
+    }
+  end
+
+  # DELETE /api/v1/merchant/merchant_restaurants/:restaurant_id/gallery/:image_id
+  def destroy_gallery_image
+    restaurant = MerchantRestaurant.find_by(
+      restaurant_id: params[:restaurant_id]
+    )
+
+    if restaurant.nil?
+      render json: {
+        success: false,
+        message: "Restaurant not found."
+      }, status: :not_found
+      return
+    end
+
+    image = restaurant.gallery_images.find_by(
+      id: params[:image_id]
+    )
+
+    if image.nil?
+      render json: {
+        success: false,
+        message: "Gallery image not found."
+      }, status: :not_found
+      return
+    end
+
+    image.purge
+
+    render json: {
+      success: true,
+      message: "Gallery image deleted successfully."
+    }
+  end
 
   # PATCH /api/v1/merchant/merchant_restaurants/:restaurant_id/settings
   def settings
