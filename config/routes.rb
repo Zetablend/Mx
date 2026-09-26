@@ -71,6 +71,10 @@ end
 
           member do
             get :gallery
+            post :gallery, action: :create_gallery_image
+            patch "gallery/:image_id", action: :update_gallery_image
+            put "gallery/:image_id", action: :update_gallery_image
+            delete "gallery/:image_id", action: :destroy_gallery_image
             patch :settings
           end
 
@@ -374,6 +378,16 @@ end
         post "staff/create", to: "staff#create"
         get "staff/list", to: "staff#list"
         get "profile", to: "profile#show"
+      end
+    end
+  end
+  
+  namespace :api do
+    namespace :v1 do
+      namespace :user do
+        get "dashboard/stats", to: "dashboard#stats"
+        get "dashboard/wallet-stats", to: "dashboard#wallet_stats"
+        get "dashboard/coupon-usage", to: "dashboard#coupon_usage"
       end
     end
   end

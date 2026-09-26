@@ -41,6 +41,8 @@ class User < ApplicationRecord
   has_many :support_tickets,
          foreign_key: :merchant_id,
          dependent: :destroy
+         
+  has_many :wallet_transactions, dependent: :destroy
 
   has_many :notifications, dependent: :destroy
   has_one :merchant_business_information,
