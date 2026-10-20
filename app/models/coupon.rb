@@ -3,6 +3,7 @@ require "rqrcode"
 class Coupon < ApplicationRecord
   belongs_to :rule, optional: true
   belongs_to :user, optional: true
+  belongs_to :restaurant, optional: true
 
   has_one_attached :qr_image
 
