@@ -43,6 +43,8 @@ end
         get    'offers/list',       to: 'offers#list'
         get    'offers/analytics',  to: 'offers#analytics'
         get    'offers/banners',    to: 'offers#banners'
+        get    'offers/featured',   to: 'offers#featured'
+        get    'offers/expiring-soon', to: 'offers#expiring_soon'
 
         post   'offers/create',              to: 'offers#create'
         put    'offers/update/:id',          to: 'offers#update'
@@ -50,6 +52,14 @@ end
         get    'offers/:id',                 to: 'offers#show'
 
       end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      resources :campaigns, only: [:index, :show]
+      resources :categories, only: [:index]
+      resources :locations, only: [:index]
     end
   end
 
@@ -321,6 +331,16 @@ end
 
   namespace :api do
     namespace :v1 do
+      resources :categories do
+        collection do
+          get :popular
+        end
+      end
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
       resources :locations, only: [:index, :show] do
         collection do
           get :states
@@ -408,8 +428,12 @@ end
 
 
       resources :restaurants do
+        collection do
+          get :popular
+        end
         member do
           get :generate_qr
+          get :coupons
         end
       end
 
@@ -493,10 +517,38 @@ end
     end
   end
 
+  namespace :api do
+    namespace :v1 do
+      namespace :user do
+        resources :reviews, only: [:index, :create, :update, :destroy] do
+          collection do
+            get :stats
+          end
+        end
+      end
 
-    
-    
-    
+      get "reviews/public", to: "reviews#public_reviews"
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      namespace :user do
+        get "coupons", to: "coupons#index"
+        get "coupons/redeemed", to: "coupons#redeemed"
+        get "redemptions", to: "redemptions#index"
+      end
+      post "user/coupons/redeem", to: "coupons#redeem"
+    end
+  end 
+
+  get "api/v1/user/redemptions/stats", to: "api/v1/user/redemptions#stats"
+  get "api/v1/user/redemptions/:id", to: "api/v1/user/redemptions#show"
+  get "api/v1/user/referrals/stats",
+    to: "api/v1/user_referrals#stats"
+  get "api/v1/user/referral-code",
+      to: "api/v1/user_referrals#referral_code"
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -22,6 +22,64 @@ class Api::V1::Merchant::OffersController < ApplicationController
   def index
     offers = MerchantOffer.where(merchant_id: @merchant.id)
 
+    if params[:search].present?
+      search = "%#{params[:search]}%"
+      offers = offers.where(
+        "title LIKE :search OR subtitle LIKE :search",
+        search: search
+      )
+    end
+
+    offers = offers.where(category: params[:category]) if params[:category].present?
+    offers = offers.where(priority: params[:type]) if params[:type].present?
+
+    if params[:location_id].present? &&
+      MerchantOffer.column_names.include?("location_id")
+      offers = offers.where(location_id: params[:location_id])
+    end
+
+    page = [params[:page].to_i, 1].max
+    limit = params[:limit].present? ? params[:limit].to_i.clamp(1, 100) : 10
+
+    total = offers.count
+    offers = offers.order(created_at: :desc)
+                  .offset((page - 1) * limit)
+                  .limit(limit)
+
+    render json: {
+      success: true,
+      data: offers,
+      pagination: {
+        page: page,
+        limit: limit,
+        total: total,
+        total_pages: (total.to_f / limit).ceil
+      }
+    }
+  end
+
+  def featured
+    offers = MerchantOffer.where(
+      merchant_id: @merchant.id,
+      category: "Featured"
+    )
+
+    render json: {
+      success: true,
+      data: offers
+    }
+  end
+
+  def expiring_soon
+    if MerchantOffer.column_names.include?("expiry_date")
+      offers = MerchantOffer
+        .where(merchant_id: @merchant.id)
+        .where(expiry_date: Date.current..7.days.from_now.to_date)
+        .order(expiry_date: :asc)
+    else
+      offers = MerchantOffer.none
+    end
+
     render json: {
       success: true,
       data: offers

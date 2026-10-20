@@ -67,12 +67,27 @@ class Api::V1::CouponsController < ApplicationController
   def redeem
     user_id = params[:user_id] || @coupon.user_id
 
-    puts "-----------------------"
-    puts user_id.to_s
-    puts "-----------------------"
-    @coupon.update(status: "redeemed")
-    puts "Redeeming coupon with params: #{params.inspect}"
-    puts @coupon.inspect.to_s
+    unless user_id.present?
+      return render json: {
+        success: false,
+        message: "User ID is required"
+      }, status: :unprocessable_entity
+    end
+
+    if @coupon.status == "redeemed"
+      return render json: {
+        success: false,
+        message: "Coupon has already been redeemed"
+      }, status: :unprocessable_entity
+    end
+
+    if @coupon.expiration_date.present? &&
+      @coupon.expiration_date < Date.current
+      return render json: {
+        success: false,
+        message: "Coupon has expired"
+      }, status: :unprocessable_entity
+    end
 
     CouponRedemption.create!(
       coupon_id: @coupon.id,
@@ -82,7 +97,32 @@ class Api::V1::CouponsController < ApplicationController
       remarks: params[:remarks]
     )
 
-    render json: { message: "Coupon redeemed successfully!", coupon_id: @coupon.id }
+    @coupon.update!(status: "redeemed")
+
+    wallet_balance = if User.column_names.include?("wallet_balance")
+                      user = ::User.find_by(id: user_id)
+                      user&.wallet_balance || 0
+                    else
+                      0
+                    end
+
+    render json: {
+      success: true,
+      message: "Coupon redeemed successfully",
+      wallet_balance: wallet_balance
+    }, status: :ok
+
+  rescue ActiveRecord::RecordNotFound
+    render json: {
+      success: false,
+      message: "Coupon not found"
+    }, status: :not_found
+
+  rescue ActiveRecord::RecordInvalid => e
+    render json: {
+      success: false,
+      message: e.message
+    }, status: :unprocessable_entity
   end
 
   # def generate_qr
@@ -111,7 +151,8 @@ class Api::V1::CouponsController < ApplicationController
   private
 
   def set_coupon
-    @coupon = Coupon.find(params[:id])
+    coupon_id = params[:id] || params[:coupon_id]
+    @coupon = Coupon.find(coupon_id)
   end
 
   def coupon_json(c)
